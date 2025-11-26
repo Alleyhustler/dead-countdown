@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEAD COUNTDOWN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Text:wght@200..700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #e0e0e0;
+            --accent-color: #ff0000;
+            --dim-color: #444;
+            --font-main: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+              font-family: "Stack Sans Text", sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Background Image Handling */
+        .bg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('sss.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: -1;
+            filter: grayscale(100%) contrast(120%);
+        }
+
+        /* --- ALIVE STATE UI --- */
+        #alive-container {
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            z-index: 1;
+            transition: opacity 1s ease;
+        }
+
+        .logo {
+            width: 80px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
+        }
+
+        h1 {
+            font-size: 2rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .twitter-link {
+            color: var(--dim-color);
+            text-decoration: none;
+            font-size: 0.8rem;
+            border: 1px solid var(--dim-color);
+            padding: 5px 15px;
+            transition: 0.3s;
+            display: inline-block;
+            margin-bottom: 40px;
+        }
+
+        .twitter-link:hover {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--dim-color);
+            color: var(--accent-color);
+            padding: 15px;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            text-align: center;
+            outline: none;
+            text-transform: uppercase;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            background: var(--dim-color);
+            color: black;
+            border: none;
+            padding: 10px;
+            font-family: var(--font-main);
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-color);
+        }
+
+        .data-display {
+            border: 1px solid var(--dim-color);
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.9);
+            position: relative;
+        }
+
+        .label {
+            font-size: 0.8rem;
+            color: var(--dim-color);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        #mcap-value {
+            font-size: 3rem;
+            color: var(--text-color);
+            font-weight: bold;
+            display: block;
+        }
+
+        #target-display {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--dim-color);
+        }
+
+        /* Tension Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+            transition: width 0.5s ease-out;
+        }
+
+        /* --- DEATH STATE UI (Hidden by default) --- */
+        #death-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            color: var(--accent-color);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .fatal-msg {
+            font-size: 4rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            animation: glitch 1s infinite;
+        }
+
+        .sub-msg {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #555;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        .final-stat {
+            margin-top: 50px;
+            border: 1px solid var(--accent-color);
+            padding: 10px 20px;
+            font-size: 1.5rem;
+        }
+
+        /* Glitch Animation */
+        @keyframes glitch {
+            0% { text-shadow: 2px 2px 0px #fff, -2px -2px 0px #333; transform: translate(0); }
+            20% { text-shadow: -2px 2px 0px #fff, 2px -2px 0px #333; transform: translate(-2px, 2px); }
+            40% { text-shadow: -2px -2px 0px #fff, 2px 2px 0px #333; transform: translate(2px, -2px); }
+            60% { text-shadow: 2px 2px 0px #fff, -2px -2px 0px #333; transform: translate(-2px, 2px); }
+            80% { text-shadow: 2px -2px 0px #fff, -2px 2px 0px #333; transform: translate(2px, -2px); }
+            100% { text-shadow: 2px 2px 0px #fff, -2px -2px 0px #333; transform: translate(0); }
+        }
+
+        .hidden { display: none !important; }
+        .visible { display: flex !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="bg-layer"></div>
+
+    <!-- MAIN UI (ALIVE) -->
+    <div id="alive-container">
+        <img src="logo.png" alt="Dead Countdown Logo" class="logo" onerror="this.style.display='none'">
+        
+        <h1>Dead Countdown</h1>
+        <a href="https://twitter.com" target="_blank" class="twitter-link">@DE4DCountdown</a>
+
+        <div class="input-group">
+            <input type="text" id="token-address" placeholder="ENTER SOLANA CONTRACT ADDRESS">
+            <button id="track-btn">INITIATE TRACKING</button>
+        </div>
+
+        <div class="data-display" id="monitor-panel" style="opacity: 0.5; pointer-events: none;">
+            <span class="label">Current Market Cap</span>
+            <span id="mcap-value">$0.00</span>
+            
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            
+            <div id="target-display">TARGET: <span id="goal-text">Loading...</span></div>
+        </div>
+    </div>
+
+    <!-- DEATH UI (DEAD) -->
+    <div id="death-container">
+        <div class="fatal-msg">TERMINATED</div>
+        <div class="sub-msg">
+            THE GOAL WAS REACHED.<br>
+            THE PROTOCOL HAS SELF-DESTRUCTED.<br>
+            THERE IS NO GOING BACK.
+        </div>
+        <div class="final-stat">
+            FINAL MCAP: <span id="final-mcap-display">---</span>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // The Market Cap at which the site dies. 
+        // Example: 1000000 = 1 Million USD.
+        const GOAL_MCAP = 1000000; 
+        
+        // --- STATE MANAGEMENT ---
+        const ELEMENTS = {
+            aliveContainer: document.getElementById('alive-container'),
+            deathContainer: document.getElementById('death-container'),
+            input: document.getElementById('token-address'),
+            btn: document.getElementById('track-btn'),
+            monitorPanel: document.getElementById('monitor-panel'),
+            mcapValue: document.getElementById('mcap-value'),
+            progressBar: document.getElementById('progress-bar'),
+            goalText: document.getElementById('goal-text'),
+            finalMcapDisplay: document.getElementById('final-mcap-display')
+        };
+
+        let activeInterval = null;
+
+        // Initialize display
+        ELEMENTS.goalText.textContent = formatCurrency(GOAL_MCAP);
+
+        // --- CORE LOGIC ---
+
+        function init() {
+            // 1. Check if we are already dead
+            if (localStorage.getItem('dead_countdown_status') === 'DEAD') {
+                triggerDeath(localStorage.getItem('dead_countdown_final_value'));
+                return;
+            }
+
+            // 2. Setup Event Listeners
+            ELEMENTS.btn.addEventListener('click', startTracking);
+        }
+
+        async function startTracking() {
+            const address = ELEMENTS.input.value.trim();
+            
+            if (!address) {
+                alert("INPUT CONTRACT ADDRESS REQUIRED");
+                return;
+            }
+
+            // Visual update to show system is active
+            ELEMENTS.btn.innerText = "TRACKING ACTIVE";
+            ELEMENTS.btn.disabled = true;
+            ELEMENTS.monitorPanel.style.opacity = "1";
+            ELEMENTS.input.disabled = true;
+
+            // Fetch immediately, then interval
+            await checkTicker(address);
+            
+            activeInterval = setInterval(() => {
+                checkTicker(address);
+            }, 5000); // Check every 5 seconds
+        }
+
+        async function checkTicker(address) {
+            try {
+                // Using DexScreener API for Solana Data
+                const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+                const data = await response.json();
+
+                if (!data.pairs || data.pairs.length === 0) {
+                    console.log("No pair found");
+                    return;
+                }
+
+                // Get the most liquid pair (usually the first one)
+                const pair = data.pairs[0];
+                
+                // Use Market Cap if available, fallback to FDV
+                const currentMcap = pair.marketCap || pair.fdv || 0;
+
+                updateDisplay(currentMcap);
+                checkSelfDestruct(currentMcap);
+
+            } catch (error) {
+                console.error("Error fetching chain data:", error);
+            }
+        }
+
+        function updateDisplay(currentMcap) {
+            // Update Text
+            ELEMENTS.mcapValue.innerText = formatCurrency(currentMcap);
+            
+            // Update Progress Bar (Visual Tension)
+            let percentage = (currentMcap / GOAL_MCAP) * 100;
+            if (percentage > 100) percentage = 100;
+            
+            ELEMENTS.progressBar.style.width = percentage + "%";
+            
+            // Change color as it gets closer
+            if (percentage > 80) {
+                ELEMENTS.mcapValue.style.color = "#ff0000";
+                ELEMENTS.mcapValue.style.textShadow = "0 0 10px red";
+            }
+        }
+
+        function checkSelfDestruct(currentMcap) {
+            if (currentMcap >= GOAL_MCAP) {
+                triggerDeath(formatCurrency(currentMcap));
+            }
+        }
+
+        function triggerDeath(finalValue) {
+            // 1. Clear intervals
+            if (activeInterval) clearInterval(activeInterval);
+
+            // 2. Set Permanent Storage
+            localStorage.setItem('dead_countdown_status', 'DEAD');
+            localStorage.setItem('dead_countdown_final_value', finalValue);
+
+            // 3. Update DOM
+            ELEMENTS.aliveContainer.classList.add('hidden');
+            ELEMENTS.aliveContainer.style.display = 'none'; // Force hide
+            
+            ELEMENTS.deathContainer.classList.add('visible');
+            ELEMENTS.deathContainer.style.display = 'flex'; // Force show
+            
+            ELEMENTS.finalMcapDisplay.innerText = finalValue;
+        }
+
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0
+            }).format(num);
+        }
+
+        // Run
+        init();
+
+    </script>
+</body>
+</html>
